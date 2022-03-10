@@ -1,0 +1,557 @@
+import discord 
+import random
+from discord.ext import commands
+from discord import User
+import discord.ext
+import os
+import datetime
+import asyncio
+import praw
+
+intents = discord.Intents().all()
+
+client = commands.Bot(command_prefix = ".")
+client.remove_command('help')
+
+@client.event
+async def on_ready():
+   print("Ready")
+   severs = len(client.guilds)
+   await client.change_presence(activity=discord.Game(name=f'Servers: {severs}'))
+  
+@client.event
+async def on_message(message):
+  
+  username = message.author.display_name
+  msg = message.content
+  with open('blacklist.txt', 'r') as f:
+    blacklist = f.read()
+    if message.author.bot:
+      return
+    elif msg.lower() in blacklist:
+      await message.delete()
+      
+ 
+      
+    else:
+      await client.process_commands(message)
+
+
+@client.command()
+@commands.has_permissions(manage_messages=True)
+async def clear(ctx, amount=100):
+  await ctx.channel.purge(limit=amount)
+  await ctx.send('>>> Succesfully Deleted 100 Messages ')
+  await ctx.channel.purge(limit = amount)
+  return
+
+@client.command()
+@commands.has_permissions(manage_messages=True)
+async def warn(ctx):
+  await ctx.send('>>> This Is A Work In Progress & May Not Be Used Right Now, Sorry For The Inconvenience')
+  
+@client.command()
+async def info(ctx):
+  embed = discord.Embed(title="INFO", url="https://cdn.discordapp.com/attachments/925828600945577984/946999253660762145/in_the_dark.mp4", description='>>> Hello Everyone, This Is The First Bot Me And My Friend Have Ever Made, cia#111, And We Plan On Making Changes Often To Impove The Bot.', color=0x9234eb)
+  embed.set_author(name="C3", url='https://www.cia.gov/')
+  await ctx.send(embed=embed)
+
+@client.command(name='unban')
+@commands.has_permissions(manage_messages=True)
+async def _unban(ctx, id: int):
+    user = await client.fetch_user(id)
+    await ctx.guild.unban(user)
+    await ctx.send(f'>>> User Unbanned: @{user}')
+
+@client.command()
+@commands.has_permissions(ban_members = True)
+async def ban(ctx, member : discord.Member, *, reason = None):
+    await member.ban(reason = reason)
+    await ctx.send(f'>>> User Banned: @{member}')
+  
+@client.command()
+async def help(ctx):
+  embed = discord.Embed(title="Help", url="https://cdn.discordapp.com/attachments/925828600945577984/946999253660762145/in_the_dark.mp4", description='>>> If You Need Any Assistance Please DM cia#1111 Or monke#9000. Thank You!', color=0x9234eb)
+  embed.set_author(name="C3", url='https://www.cia.gov/')
+  await ctx.send(embed=embed)
+  
+@client.group(invoke_without_command=True)
+async def cmds(ctx):
+  em = discord.Embed(title = 'cmds', description = '>>> Use .cmds <command> For Extended Info On A Specified Command', color = 0x9234eb)
+  em.add_field(name = "Moderation", value = ">>> kick, ban, mute, unmute, clear, lock, unlock, warn")
+  em.add_field(name = 'Random', value = ">>> userinfo, pp")
+  em.add_field(name = 'Games', value = ">>> race, ttt")
+  em.add_field(name = 'Sever Fun', value = '>>> poll, giveaway')
+  await ctx.send(embed = em)
+
+@cmds.command()
+async def pp(ctx):
+
+  em = discord.Embed(tittle = 'pp', description = ">>> Tells You The Truth About How Long It Is", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.pp <member> ')
+  await ctx.send(embed = em)
+
+@cmds.command()
+async def ttt(ctx):
+
+  em = discord.Embed(tittle = 'TicTacToe', description = ">>> Plays a game of Tic Tac Toe", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.ttt <you> <member> ')
+  await ctx.send(embed = em)
+
+@cmds.command()
+async def poll(ctx):
+
+  em = discord.Embed(tittle = 'poll', description = ">>> Creates A Poll", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.poll <question> ')
+  await ctx.send(embed = em)
+
+@cmds.command()
+async def giveaway(ctx):
+
+  em = discord.Embed(tittle = 'giveaway', description = ">>> Creates A Giveaway ", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.giveaway')
+  await ctx.send(embed = em)
+
+
+@cmds.command()
+async def lock(ctx):
+
+  em = discord.Embed(tittle = 'lock', description = ">>> Locks The Channel The The Command Is Sent In", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.lock')
+  await ctx.send(embed = em)
+
+@cmds.command()
+async def unlock(ctx):
+
+  em = discord.Embed(tittle = 'unlock', description = ">>> Unlocks The Channel The The Command Is Sent In ", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.unlock')
+  await ctx.send(embed = em)
+
+@cmds.command()
+async def kick(ctx):
+
+  em = discord.Embed(tittle = 'kick', description = ">>> Kicks The Specified User", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.kick <member> [reason]')
+  await ctx.send(embed = em)
+  
+@cmds.command()
+async def ban(ctx):
+
+  em = discord.Embed(tittle = 'ban', description = ">>> Bans The Specified User", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.ban <member> [reason]')
+  await ctx.send(embed = em)  
+
+@cmds.command()
+async def race(ctx):
+
+  em = discord.Embed(tittle = 'race', description = ">>> Races The Mentioned User", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.cars <member> ')
+  await ctx.send(embed = em)  
+    
+@cmds.command()
+async def unban(ctx):
+
+  em = discord.Embed(tittle = 'unban', description = ">>> Unbans The Specified User", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.unban <USER ID> ')
+  await ctx.send(embed = em)
+  
+
+@cmds.command()
+async def clear(ctx):
+
+  em = discord.Embed(tittle = 'clear', description = ">>> Clears 100 Messages", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.clear ')
+  await ctx.send(embed = em)
+  
+@cmds.command()
+async def mute(ctx):
+
+  em = discord.Embed(tittle = 'kick', description = ">>> Mutes The Specified User", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.mute <member> [reason]')
+  await ctx.send(embed = em)  
+  
+@cmds.command()
+async def unmute(ctx):
+
+  em = discord.Embed(tittle = 'unmute', description = ">>> Unmutes A Specified User", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.unmute <USER ID> ')
+  await ctx.send(embed = em)  
+  
+@cmds.command()
+async def userinfo(ctx):
+
+  em = discord.Embed(tittle = 'userinfo', description = ">>> Gets Info From The User Who Uses The Command", color = 0x9234eb)
+  em.add_field(name = '**Syntax**', value = '.userinfo  ')
+  await ctx.send(embed = em) 
+  
+@client.command(description=">>> Gets Info From The User Who Uses The Command")
+async def userinfo(ctx):
+    user = ctx.author
+
+    embed=discord.Embed(title="USER INFO", description=f">>> Here Is The Info We Retrieved About {user}", colour=user.colour)
+    embed.set_thumbnail(url=user.avatar_url)
+    embed.add_field(name="NAME", value=user.name, inline=True)
+    embed.add_field(name="NICKNAME", value=user.nick, inline=True)
+    embed.add_field(name="ID", value=user.id, inline=True)
+    embed.add_field(name="TOP ROLE", value=user.top_role.name, inline=True)
+    await ctx.send(embed=embed)
+
+@client.command(description=">>> Mutes The Specified User.")
+@commands.has_permissions(manage_messages=True)
+async def mute(ctx, member: discord.Member, *, reason=None):
+    guild = ctx.guild
+    mutedRole = discord.utils.get(guild.roles, name="muted")
+
+    if not mutedRole:
+        mutedRole = await guild.create_role(name="muted")
+
+        for channel in guild.channels:
+            await channel.set_permissions(mutedRole, speak=False, send_messages=False, read_message_history=True, read_messages=False)
+
+    await member.add_roles(mutedRole, reason=reason)
+    await ctx.send(f">>> Muted: {member.mention} For: {reason}")
+    await member.send(f">>> You Were Muted In {guild.name} For: {reason}")
+  
+@client.command(description="Unmutes A Specified User.")
+@commands.has_permissions(manage_messages=True)
+async def unmute(ctx, member: discord.Member):
+    mutedRole = discord.utils.get(ctx.guild.roles, name="muted")
+
+    await member.remove_roles(mutedRole)
+    await ctx.send(f">>> Unmuted: {member.mention}")
+    await member.send(f">>> You Were Unmuted In The Server: {ctx.guild.name}")
+
+@client.command()
+async def hello(ctx):
+  await ctx.send(f'>>> See How To Use Me In #commands ')
+  
+@client.group()
+async def race(ctx, member: discord.Member):
+  car = random.randint(1,169)
+  car2 = random.randint(1,169)
+  await ctx.send(":red_circle: :yellow_circle: :green_circle:")
+  await ctx.send(f'@{member} Car Goes {car} mph')
+  await ctx.send("-----------------------------")
+  await ctx.send(f'@{ctx.author} Car Goes {car2} mph!')
+  await ctx.send("-----------------------------")
+  
+  if car > car2:
+    await ctx.send(f'{member} Wins The Race :checkered_flag: ')
+  elif car2 > car:
+    await ctx.send(f'{ctx.author} Wins The Race :checkered_flag: ')
+  else:
+    await ctx.send('Its A Tie!')
+
+@client.group()
+async def pp(ctx, member: discord.Member):
+  size = random.randint(1,100)
+  messure = ("cms", "inchs", "feet", "yards")
+  mes = random.choice(messure)
+  await ctx.send(f">>> @{member} PP Is {size} {mes} Long, (Wowwy Your Ding-Dong Is Short)")
+
+@client.command()
+@commands.has_permissions(manage_channels=True)
+async def lock(ctx, channel : discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(ctx.guild.default_role)
+    overwrite.send_messages = False
+    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+    await ctx.send('Channel locked.')
+
+@client.command()
+@commands.has_permissions(manage_channels=True)
+async def unlock(ctx, channel : discord.TextChannel=None):
+    channel = channel or ctx.channel
+    overwrite = channel.overwrites_for(ctx.guild.default_role)
+    overwrite.send_messages = True
+    await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite)
+    await ctx.send('Channel Unlocked.')
+
+
+@client.command()
+async def version(ctx):
+    # Version command that contains the current version number and recent changes made
+    ver = discord.Embed(color = 0x7289da)
+    ver.set_author(name = 'Update Notes', icon_url= '')
+    ver.add_field(name = 'Version: 1.02', value = f'• The giveaway command has seen a complete overhaul, now allowing hosts to run giveaways for specific channels without the users seeing the commands.\n• Fixed various grammar and spelling mistakes.\n• Fixed the bots status.', inline= False)
+    await ctx.send(embed = ver)
+
+
+
+@client.command()
+async def helpme(ctx):
+    # Help command that lists the current available commands and describes what they do
+    ghelp = discord.Embed(color = 0x9234eb)
+    ghelp.set_author(name = 'Commands/Help', icon_url = '')
+    ghelp.add_field(name= 'helpme', value = '>>> This Command Took You Here!', inline = False)
+    ghelp.add_field(name= 'version', value = '>>> Displays The Current Version Number And Recent Updates.', inline = False)
+    ghelp.add_field(name= 'giveaway', value = '>>> Can Only Be Accessed By Users With The "Giveaway Host" Role.__\nStarts A Giveaway For the server! This Command Will Ask The Host 3 Questions.  The Host Will Have 30 Seconds Per Question To Answer Or They Will Be Timed Out!', inline = False)
+    ghelp.add_field(name= 'reroll `#channel_name` `message id`', value = '>>> Can Only Be Accessed By Users With The "Giveaway Host" Role.__\nThey Must Follow The Command With The Copied Message ID From The Giveaway.', inline = False)
+    ghelp.set_footer(text = 'Use The Prefix "g!" Before All Commands!')
+    ghelp.set_footer(text = 'This Bot Was Made/Co Created By https://github.com/j-ackk On Github, Thank You ')
+    await ctx.send(embed = ghelp)
+
+
+
+@client.command()
+@commands.has_role("Host")
+async def giveaway(ctx):
+    # Giveaway command requires the user to have a "Giveaway Host" role to function properly
+
+    # Stores the questions that the bot will ask the user to answer in the channel that the command was made
+    # Stores the answers for those questions in a different list
+    giveaway_questions = ['>>> Which Channel Shall I Host The Giveaway In?', 'What Is The Prize?', 'How Long Shall The Giveaway Last (In Seconds)?',]
+    giveaway_answers = []
+
+    # Checking to be sure the author is the one who answered and in which channel
+    def check(m):
+        return m.author == ctx.author and m.channel == ctx.channel
+    
+    # Askes the questions from the giveaway_questions list 1 by 1
+    # Times out if the host doesn't answer within 30 seconds
+    for question in giveaway_questions:
+        await ctx.send(question)
+        try:
+            message = await client.wait_for('message', timeout= 30.0, check= check)
+        except asyncio.TimeoutError:
+            await ctx.send('>>> You Didn\'t Answer In Time.  Please Try Again And Be Faster At Answering The Question Fatass (30 Second Limit)')
+            return
+        else:
+            giveaway_answers.append(message.content)
+
+    # Grabbing the channel id from the giveaway_questions list and formatting is properly
+    # Displays an exception message if the host fails to mention the channel correctly
+    try:
+        c_id = int(giveaway_answers[0][2:-1])
+    except:
+        await ctx.send(f'>>> You Failed To Mention The Channel Correctly.  Please Do It Like This: {ctx.channel.mention}')
+        return
+    
+    # Storing the variables needed to run the rest of the commands
+    channel = client.get_channel(c_id)
+    prize = str(giveaway_answers[1])
+    time = int(giveaway_answers[2])
+
+    # Sends a message to let the host know that the giveaway was started properly
+    await ctx.send(f'>>> The Giveaway For {prize} Will Begin Shortly.\nPlease Direct Your Attention To {channel.mention}, This Giveaway Will End In {time} Seconds!')
+
+    # Giveaway embed message
+    give = discord.Embed(color = 0x9234eb)
+    give.set_author(name = f'GIVEAWAY TIME!', icon_url = 'https://i.imgur.com/VaX0pfM.png')
+    give.add_field(name= f'{ctx.author.name} is giving away: {prize}!', value = f'React with 🎉 to enter!\n Ends in {round(time/60, 2)} minutes!', inline = False)
+    end = datetime.datetime.utcnow() + datetime.timedelta(seconds = time)
+    give.set_footer(text = f'Giveaway ends at {end} UTC!')
+    my_message = await channel.send(embed = give)
+    
+    # Reacts to the message
+    await my_message.add_reaction("🎉")
+    await asyncio.sleep(time)
+
+    new_message = await channel.fetch_message(my_message.id)
+
+    # Picks a winner
+    users = await new_message.reactions[0].users().flatten()
+    users.pop(users.index(client.user))
+    winner = random.choice(users)
+
+    # Announces the winner
+    winning_announcement = discord.Embed(color = 0x9234eb)
+    winning_announcement.set_author(name = f'THE GIVEAWAY HAS ENDED!', icon_url= 'https://i.imgur.com/DDric14.png')
+    winning_announcement.add_field(name = f'🎉 Prize: {prize}', value = f'🥳 **Winner**: {winner.mention}\n 🎫 **Number of Entrants**: {len(users)}', inline = False)
+    winning_announcement.set_footer(text = 'Thanks For Entering!')
+    await channel.send(embed = winning_announcement)
+
+
+
+@client.command()
+@commands.has_role("Host")
+async def reroll(ctx, channel: discord.TextChannel, id_ : int):
+    # Reroll command requires the user to have a "Giveaway Host" role to function properly
+    try:
+        new_message = await channel.fetch_message(id_)
+    except:
+        await ctx.send(">>> Incorrect ID.")
+        return
+    
+    # Picks a new winner
+    users = await new_message.reactions[0].users().flatten()
+    users.pop(users.index(client.user))
+    winner = random.choice(users)
+
+    # Announces the new winner to the server
+    reroll_announcement = discord.Embed(color = 0x9234eb)
+    reroll_announcement.set_author(name = f'>>> The Giveaway Was Re-Rolled By The Host!', icon_url = 'https://i.imgur.com/DDric14.png')
+    reroll_announcement.add_field(name = f'🥳 New Winner:', value = f'{winner.mention}', inline = False)
+    await channel.send(embed = reroll_announcement)
+
+@client.command()
+async def poll(ctx, *, content:str):
+  print("Creating yes/no poll...")
+  #create the embed file
+  embed=discord.Embed(title=f"{content}", description=">>>React To This Message With ✅ For Yes, ❌ For No.",  color=0x9234eb)
+  #set the author and icon
+  embed.set_author(name=ctx.author.display_name, icon_url=ctx.author.avatar_url) 
+  print("Embed Created")
+  #send the embed 
+  message = await ctx.channel.send(embed=embed)
+  #add the reactions
+  await message.add_reaction("✅")
+  await message.add_reaction("❌")
+
+@client.command()
+async def devs(ctx):
+  em = discord.Embed(title = 'Developers', description = '>>> All Of The Developers! ', color = 0x9234eb)
+  em.add_field(name = "nigga (monke)", value = ">>> Had The Idea Put It Togther And Made It")
+  em.add_field(name = 'cia', value = ">>> Made Everything Look Nice, Barely Coded Jack Shit")
+  em.add_field(name = 'alexlol', value = ">>> Help Created The Website, + Co-Created Some Of The Commands!")
+  em.add_field(name = 'you', value = '>>> Thanks For Any Support Given, More To Come in the Future! :heart: ')
+  await ctx.send(embed = em)
+
+@client.command()
+async def social(ctx):
+  em = discord.Embed(title = 'Socials', description = '>>> All Socials', color = 0x9234eb)
+  em.add_field(name = "TikTok", value = ">>> @jvdz")
+  em.add_field(name = 'YouTube', value = ">>> Making One Soon!")
+  em.add_field(name = 'Twitter', value = ">>> https://twitter.com/C3Bots")
+  em.add_field(name = 'Website', value = ">>> https://c3.snnabsbba.repl.co/")
+  await ctx.send(embed = em)
+
+player1 = ""
+player2 = ""
+turn = ""
+gameOver = True
+
+board = []
+
+winningConditions = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+]
+
+@client.command()
+async def ttt(ctx, p1: discord.Member, p2: discord.Member):
+    global count
+    global player1
+    global player2
+    global turn
+    global gameOver
+
+    if gameOver:
+        global board
+        board = [":white_large_square:", ":white_large_square:", ":white_large_square:",
+                 ":white_large_square:", ":white_large_square:", ":white_large_square:",
+                 ":white_large_square:", ":white_large_square:", ":white_large_square:"]
+        turn = ""
+        gameOver = False
+        count = 0
+
+        player1 = p1
+        player2 = p2
+
+        # print the board
+        line = ""
+        for x in range(len(board)):
+            if x == 2 or x == 5 or x == 8:
+                line += " " + board[x]
+                await ctx.send(line)
+                line = ""
+            else:
+                line += " " + board[x]
+
+        # determine who goes first
+        num = random.randint(1, 2)
+        if num == 1:
+            turn = player1
+            await ctx.send("It is <@" + str(player1.id) + ">'s turn.")
+        elif num == 2:
+            turn = player2
+            await ctx.send("It is <@" + str(player2.id) + ">'s turn.")
+    else:
+        await ctx.send("A game is already in progress! Finish it before starting a new one.")
+
+
+
+
+@client.command()
+async def place(ctx, pos: int):
+    global turn
+    global player1
+    global player2
+    global board
+    global count
+    global gameOver
+
+    if not gameOver:
+        mark = ""
+        if turn == ctx.author:
+            if turn == player1:
+                mark = ":regional_indicator_x:"
+            elif turn == player2:
+                mark = ":o2:"
+            if 0 < pos < 10 and board[pos - 1] == ":white_large_square:" :
+                board[pos - 1] = mark
+                count += 1
+
+                # print the board
+                line = ""
+                for x in range(len(board)):
+                    if x == 2 or x == 5 or x == 8:
+                        line += " " + board[x]
+                        await ctx.send(line)
+                        line = ""
+                    else:
+                        line += " " + board[x]
+
+                checkWinner(winningConditions, mark)
+                print(count)
+                if gameOver == True:
+                    await ctx.send(mark + " wins!")
+                elif count >= 9:
+                    gameOver = True
+                    await ctx.send("It's a tie!")
+
+                # switch turns
+                if turn == player1:
+                    turn = player2
+                elif turn == player2:
+                    turn = player1
+            else:
+                await ctx.send("Be sure to choose an integer between 1 and 9 (inclusive) and an unmarked tile.")
+        else:
+            await ctx.send("It is not your turn.")
+    else:
+        await ctx.send("Please start a new game using the !ttt command.")
+
+
+def checkWinner(winningConditions, mark):
+    global gameOver
+    for condition in winningConditions:
+        if board[condition[0]] == mark and board[condition[1]] == mark and board[condition[2]] == mark:
+            gameOver = True
+
+@ttt.error
+async def tictactoe_error(ctx, error):
+    print(error)
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("Please mention 2 players for this command.")
+    elif isinstance(error, commands.BadArgument):
+        await ctx.send("Please make sure to mention/ping players (ie. <@688534433879556134>).")
+
+@place.error
+async def place_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send("Please enter a position you would like to mark.")
+    elif isinstance(error, commands.BadArgument):
+        await ctx.send("Please make sure to enter an integer.")
+      
+
+
+  
+
+client.run('BOTTOKEN')
